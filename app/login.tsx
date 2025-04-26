@@ -1,15 +1,13 @@
 import { useContext } from "react";
 import { View, Text, Button, StyleSheet } from "react-native";
-import { AuthContext } from "../../utils/authContext";
+import { AuthContext } from "../utils/authContext";
 
-// (tabs)\index.tsx
-
-export default function Tab() {
+export default function Login() {
   const authContext = useContext(AuthContext);
   return (
     <View style={styles.container}>
-      <Text>Tab Home</Text>
-      <Button title="Log out!" onPress={authContext.logOut} />
+      <Text>Login Screen</Text>
+      <Button title="Login in!" onPress={authContext.logIn} />
     </View>
   );
 }
