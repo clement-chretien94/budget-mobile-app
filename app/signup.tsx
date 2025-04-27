@@ -9,16 +9,33 @@ export default function Login() {
 
   // State to manage the username and password inputs
   const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  const handleSignUp = () => {
+    if (password !== confirmPassword) {
+      alert("Passwords do not match!");
+      return;
+    }
+    authContext.signUp({ username, email, password });
+  };
 
   return (
     <View style={styles.container}>
-      <Text style={{ fontSize: 24, marginBottom: 20 }}>Login</Text>
+      <Text style={{ fontSize: 24, marginBottom: 20 }}>Sign Up</Text>
       <TextInput
         value={username}
         onChangeText={setUsername}
         style={styles.input}
         placeholder="Username"
+      />
+      <TextInput
+        value={email}
+        onChangeText={setEmail}
+        style={styles.input}
+        placeholder="Email"
+        keyboardType="email-address"
       />
       <TextInput
         value={password}
@@ -27,20 +44,24 @@ export default function Login() {
         placeholder="Password"
         secureTextEntry
       />
-      <Button
-        title="Login in!"
-        onPress={() => authContext.logIn({ username, password })}
+      <TextInput
+        value={confirmPassword}
+        onChangeText={setConfirmPassword}
+        style={styles.input}
+        placeholder="Confirm Password"
+        secureTextEntry
       />
+      <Button title="Sign Up!" onPress={handleSignUp} />
       <Text style={{ marginTop: 20 }}>
-        Don't have an account?{" "}
+        Already have an account?{" "}
         <Text
           onPress={() => {
-            // Navigate to the signup page
-            router.push("/signup");
+            // Navigate to the login page
+            router.push("/login");
           }}
           style={{ color: "blue" }}
         >
-          Sign up
+          Log in
         </Text>
       </Text>
     </View>
