@@ -4,11 +4,12 @@ import { AuthContext } from "../../utils/authContext";
 
 export default function Tab() {
   const authContext = useContext(AuthContext);
+  const user = authContext.user;
+
   return (
     <View style={styles.container}>
-      <Text>Tab Home</Text>
+      <Text style={styles.title}>Welcome {user?.username}</Text>
       <Button title="Log out!" onPress={authContext.logOut} />
-      <Text>Token: {authContext.jwtToken}</Text>
     </View>
   );
 }
@@ -18,5 +19,9 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
   },
 });

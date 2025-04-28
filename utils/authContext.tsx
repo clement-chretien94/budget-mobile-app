@@ -2,8 +2,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SecureStore from "expo-secure-store";
 import { SplashScreen, useRouter } from "expo-router";
 import { createContext, PropsWithChildren, useEffect, useState } from "react";
-import { AuthState, UserConnect, UserCreate } from "../types";
-import { connectUser, createUser } from "../api";
+import { AuthState, User, UserConnect, UserCreate } from "../types";
+import { connectUser, createUser, getConnectedUser } from "../api";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -12,6 +12,7 @@ const authJWTSecureStorageKey = "auth_jwt_key";
 
 export const AuthContext = createContext<AuthState>({
   isLoggedIn: false,
+  user: null,
   jwtToken: undefined,
   isReady: false,
   logIn: ({}: { username: string; password: string }) => {},
@@ -22,17 +23,12 @@ export const AuthContext = createContext<AuthState>({
 export function AuthProvider({ children }: PropsWithChildren) {
   const [isReady, setIsReady] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
   const [jwtToken, setJwtToken] = useState<string | undefined>(undefined);
   const router = useRouter();
 
-  const storeAuthState = async (newState: {
-    isLoggedIn: boolean;
-    jwtToken?: string;
-  }) => {
+  const storeAuthState = async (newState: { jwtToken: string | undefined }) => {
     try {
-      const jsonLoggedInState = JSON.stringify(newState);
-      await AsyncStorage.setItem(authStorageKey, jsonLoggedInState);
-
       if (newState.jwtToken) {
         await SecureStore.setItemAsync(
           authJWTSecureStorageKey,
@@ -58,8 +54,9 @@ export function AuthProvider({ children }: PropsWithChildren) {
       const user: UserConnect = await connectUser(username, password);
       console.log("User connected:", user);
       setIsLoggedIn(true);
+      setUser(user.user);
       setJwtToken(user.jwt);
-      storeAuthState({ isLoggedIn: true, jwtToken: user.jwt });
+      storeAuthState({ jwtToken: user.jwt });
       router.replace("/");
     } catch (error) {
       console.log("Error connecting user", error);
@@ -72,8 +69,9 @@ export function AuthProvider({ children }: PropsWithChildren) {
   // TODO: Delete the jwt token from the storage
   const logOut = () => {
     setIsLoggedIn(false);
+    setUser(null);
     setJwtToken(undefined);
-    storeAuthState({ isLoggedIn: false });
+    storeAuthState({ jwtToken: undefined });
     router.replace("/login");
   };
 
@@ -100,15 +98,24 @@ export function AuthProvider({ children }: PropsWithChildren) {
       await new Promise((res) => setTimeout(() => res(null), 1000));
 
       try {
-        const isLoggedInValue = await AsyncStorage.getItem(authStorageKey);
         const jwtTokenValue = await SecureStore.getItemAsync(
           authJWTSecureStorageKey
         );
 
-        if (isLoggedInValue && jwtTokenValue) {
-          const auth = JSON.parse(isLoggedInValue);
-          setIsLoggedIn(auth.isLoggedIn);
+        if (jwtTokenValue) {
           setJwtToken(jwtTokenValue);
+          setIsLoggedIn(true);
+
+          try {
+            const user = await getConnectedUser(jwtTokenValue);
+            console.log("User fetched from storage:", user);
+            setUser(user);
+          } catch (error) {
+            console.log("Error fetching user from storage", error);
+            setIsLoggedIn(false);
+            setUser(null);
+            setJwtToken(undefined);
+          }
         }
       } catch (error) {
         console.log("Error fetching from storage", error);
@@ -126,7 +133,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
   return (
     <AuthContext.Provider
-      value={{ isLoggedIn, jwtToken, isReady, logIn, logOut, signUp }}
+      value={{ isLoggedIn, user, jwtToken, isReady, logIn, logOut, signUp }}
     >
       {children}
     </AuthContext.Provider>

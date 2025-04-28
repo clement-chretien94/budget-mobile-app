@@ -1,5 +1,6 @@
 export type AuthState = {
   isLoggedIn: boolean;
+  user: User | null;
   jwtToken: string | undefined;
   isReady: boolean;
   logIn: ({

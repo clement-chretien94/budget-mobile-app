@@ -41,3 +41,21 @@ export const connectUser = async (
   console.log("User connected:", data);
   return data;
 };
+
+export const getConnectedUser = async (jwt: string): Promise<User> => {
+  const response = await fetch(`${baseUrl}/user`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${jwt}`,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch user");
+  }
+
+  const data = await response.json();
+  console.log("User fetched:", data);
+  return data;
+};
