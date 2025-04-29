@@ -1,4 +1,4 @@
-import { User, UserConnect, UserCreate } from "./types";
+import { Budget, User, UserConnect, UserCreate } from "./types";
 
 const baseUrl = "http://192.168.1.21:3000";
 
@@ -57,5 +57,23 @@ export const getConnectedUser = async (jwt: string): Promise<User> => {
 
   const data = await response.json();
   console.log("User fetched:", data);
+  return data;
+};
+
+export const getCurrentBudget = async (jwt: string): Promise<Budget> => {
+  const response = await fetch(`${baseUrl}/budgets/current`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${jwt}`,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch current budget");
+  }
+
+  const data = await response.json();
+  console.log("Budget fetched:", data);
   return data;
 };
