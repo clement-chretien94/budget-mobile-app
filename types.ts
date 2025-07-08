@@ -41,7 +41,7 @@ export type Budget = {
   userId: number;
   createdAt: string;
   updatedAt: string;
-  transactions: Transaction[];
+  categories: Category[];
 };
 
 export type Category = {
@@ -50,7 +50,7 @@ export type Category = {
   emoji: string;
   color: string;
   limitAmount?: number;
-  userId: number;
+  budgetId: number;
   createdAt: string;
   updatedAt: string;
   transactions: Transaction[];
@@ -59,11 +59,10 @@ export type Category = {
 export type Transaction = {
   id: number;
   amount: number;
-  description: string;
   type: string;
+  description: string;
   date: string;
   categoryId: number;
-  budgetId: number;
   createdAt: string;
   updatedAt: string;
 };

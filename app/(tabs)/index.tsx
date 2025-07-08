@@ -1,5 +1,12 @@
 import { useContext, useEffect, useState } from "react";
-import { View, Text, Button, StyleSheet, FlatList } from "react-native";
+import {
+  View,
+  Text,
+  Button,
+  StyleSheet,
+  FlatList,
+  Pressable,
+} from "react-native";
 import { AuthContext } from "../../utils/authContext";
 import { Budget, Category, Transaction } from "../../types";
 import { getCurrentBudget } from "../../api";
@@ -8,36 +15,33 @@ import { getCurrentBudget } from "../../api";
 const transactions: Transaction[] = [
   {
     id: 1,
-    amount: 100,
-    description: "Groceries",
+    amount: 50,
     type: "expense",
-    date: "2023-10-01",
+    description: "Groceries",
+    date: "2023-10-01T00:00:00Z",
     categoryId: 1,
-    budgetId: 1,
     createdAt: "2023-10-01T00:00:00Z",
     updatedAt: "2023-10-01T00:00:00Z",
   },
   {
     id: 2,
-    amount: 50,
-    description: "Salary",
-    type: "income",
-    date: "2023-10-05",
-    categoryId: 2,
-    budgetId: 1,
-    createdAt: "2023-10-05T00:00:00Z",
-    updatedAt: "2023-10-05T00:00:00Z",
+    amount: 100,
+    type: "expense",
+    description: "Electricity Bill",
+    date: "2023-10-01T00:00:00Z",
+    categoryId: 3,
+    createdAt: "2023-10-01T00:00:00Z",
+    updatedAt: "2023-10-01T00:00:00Z",
   },
   {
     id: 3,
-    amount: 20,
-    description: "Transport",
+    amount: 30,
     type: "expense",
-    date: "2023-10-10",
+    description: "Dinner out",
+    date: "2023-10-02T00:00:00Z",
     categoryId: 1,
-    budgetId: 1,
-    createdAt: "2023-10-10T00:00:00Z",
-    updatedAt: "2023-10-10T00:00:00Z",
+    createdAt: "2023-10-01T00:00:00Z",
+    updatedAt: "2023-10-01T00:00:00Z",
   },
 ];
 
@@ -48,21 +52,32 @@ const categories: Category[] = [
     emoji: "🍔",
     color: "#FF6347",
     limitAmount: 500,
-    userId: 1,
+    budgetId: 1,
     createdAt: "2023-10-01T00:00:00Z",
     updatedAt: "2023-10-01T00:00:00Z",
     transactions: transactions.filter((t) => t.categoryId === 1),
   },
   {
     id: 2,
-    name: "Salary",
-    emoji: "💰",
-    color: "#32CD32",
-    limitAmount: 2000,
-    userId: 1,
+    name: "Entertainment",
+    emoji: "🎉",
+    color: "#FFD700",
+    limitAmount: 300,
+    budgetId: 1,
     createdAt: "2023-10-01T00:00:00Z",
     updatedAt: "2023-10-01T00:00:00Z",
-    transactions: transactions.filter((t) => t.categoryId === 2),
+    transactions: [],
+  },
+  {
+    id: 3,
+    name: "Utilities",
+    emoji: "💡",
+    color: "#4682B4",
+    limitAmount: 150,
+    budgetId: 1,
+    createdAt: "2023-10-01T00:00:00Z",
+    updatedAt: "2023-10-01T00:00:00Z",
+    transactions: [],
   },
 ];
 
@@ -115,6 +130,11 @@ export default function Home() {
     }, 0);
   };
 
+  const handleCreateBudget = () => {
+    // Handle budget creation logic here
+    console.log("Create Budget button pressed");
+  };
+
   if (isLoading) {
     return <Text>Loading...</Text>;
   }
@@ -124,45 +144,85 @@ export default function Home() {
       {/* Header */}
       <Text style={styles.header}>My Budget</Text>
 
-      {/* Total Balance */}
-      <View style={styles.balanceContainer}>
-        <Text style={styles.balanceLabel}>Total Balance</Text>
-        <Text style={styles.balanceAmount}>${getTotalBalance()}</Text>
-      </View>
-
-      {/* Budget Categories */}
-      <Text style={styles.sectionTitle}>Budget Categories</Text>
-      <View style={styles.categoriesContainer}>
-        {categories.map((category) => (
-          <View
-            key={category.id}
-            style={[styles.categoryCard, { backgroundColor: category.color }]}
-          >
-            <Text style={styles.categoryName}>{category.name}</Text>
-            <Text style={styles.categoryAmount}>
-              {getTotalTransaction(category.transactions)}/
-              {category.limitAmount || 0}
-            </Text>
+      {!budget ? (
+        <>
+          <Text style={styles.sectionTitle}>
+            No budget found for this month. Please create a budget.
+          </Text>
+          <Button title="Create Budget" onPress={handleCreateBudget} />
+        </>
+      ) : (
+        <>
+          {/* Total Balance */}
+          <View style={styles.balanceContainer}>
+            <Text style={styles.balanceLabel}>Total Balance</Text>
+            <Text style={styles.balanceAmount}>${getTotalBalance()}</Text>
           </View>
-        ))}
+
+          {/* Budget Categories */}
+          <Text style={styles.sectionTitle}>Budget Categories</Text>
+          <FlatList
+            data={[...categories, { id: "add", name: "Add", color: "#D3D3D3" }]} // Add a dummy category for the "+" button
+            horizontal
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={({ item: category }) =>
+              category.id === "add" ? (
+                <Pressable
+                  style={[
+                    styles.categoryCard,
+                    { backgroundColor: category.color },
+                  ]}
+                  onPress={() => {
+                    // Handle add category logic here
+                    console.log("Add Category button pressed");
+                  }}
+                >
+                  <Text style={styles.addCategoryText}>+</Text>
+                </Pressable>
+              ) : (
+                <View
+                  style={[
+                    styles.categoryCard,
+                    { backgroundColor: category.color },
+                  ]}
+                >
+                  <Text style={styles.categoryName}>{category.name}</Text>
+                  <Text style={styles.categoryAmount}>
+                    {"transactions" in category
+                      ? getTotalTransaction(category.transactions)
+                      : 0}
+                    /{"limitAmount" in category ? category.limitAmount || 0 : 0}
+                  </Text>
+                </View>
+              )
+            }
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.categoriesContainer}
+          />
+
+          {/* Recent Transactions */}
+          <Text style={styles.sectionTitle}>Recent Transactions</Text>
+          <FlatList
+            data={transactions}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={({ item }) => (
+              <View style={styles.transactionItem}>
+                <Text style={styles.transactionDescription}>
+                  {item.description}
+                </Text>
+                <Text style={styles.transactionAmount}>${item.amount}</Text>
+              </View>
+            )}
+          />
+        </>
+      )}
+
+      {/* Add Transaction Button */}
+
+      {/* Log Out Button */}
+      <View style={styles.logoutButton}>
+        <Button title="Log out!" onPress={authContext.logOut} />
       </View>
-
-      {/* Recent Transactions */}
-      <Text style={styles.sectionTitle}>Recent Transactions</Text>
-      <FlatList
-        data={transactions}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => (
-          <View style={styles.transactionItem}>
-            <Text style={styles.transactionDescription}>
-              {item.description}
-            </Text>
-            <Text style={styles.transactionAmount}>${item.amount}</Text>
-          </View>
-        )}
-      />
-
-      <Button title="Log out!" onPress={authContext.logOut} />
     </View>
   );
 }
@@ -202,23 +262,30 @@ const styles = StyleSheet.create({
   categoriesContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 16,
   },
   categoryCard: {
-    flex: 1,
-    padding: 16,
+    width: 160,
+    height: 120,
     borderRadius: 8,
-    marginHorizontal: 4,
+    marginHorizontal: 8,
     alignItems: "center",
+    justifyContent: "center",
   },
   categoryName: {
     color: "#FFFFFF",
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "bold",
+    marginBottom: 8,
   },
   categoryAmount: {
     color: "#FFFFFF",
-    fontSize: 14,
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  addCategoryText: {
+    fontSize: 32,
+    fontWeight: "bold",
+    color: "#000",
   },
   transactionItem: {
     flexDirection: "row",
@@ -238,5 +305,9 @@ const styles = StyleSheet.create({
   transactionAmount: {
     fontSize: 16,
     fontWeight: "bold",
+  },
+  logoutButton: {
+    flex: 1,
+    justifyContent: "flex-end",
   },
 });
