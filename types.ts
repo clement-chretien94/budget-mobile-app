@@ -44,6 +44,10 @@ export type Budget = {
   categories: Category[];
 };
 
+export type BudgetCreate = {
+  stableIncome: number;
+};
+
 export type Category = {
   id: number;
   name: string;
@@ -56,13 +60,31 @@ export type Category = {
   transactions: Transaction[];
 };
 
+export type CategoryCreate = {
+  name: string;
+  emoji: string;
+  color: string;
+  limitAmount?: number;
+  budgetId: number;
+};
+
+export type TransactionType = "expense" | "income";
+
 export type Transaction = {
   id: number;
   amount: number;
-  type: string;
-  description: string;
+  type: TransactionType;
+  name: string;
   date: string;
   categoryId: number;
   createdAt: string;
   updatedAt: string;
+};
+
+export type TransactionCreate = {
+  name: string;
+  type: string;
+  amount: number;
+  date: Date;
+  categoryId?: number;
 };

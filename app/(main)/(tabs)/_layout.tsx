@@ -1,21 +1,7 @@
 import { FontAwesome } from "@expo/vector-icons";
-import { Redirect, Tabs } from "expo-router";
-import { useContext } from "react";
-import { AuthContext } from "../../utils/authContext";
+import { Tabs } from "expo-router";
 
 export default function TabLayout() {
-  const authContext = useContext(AuthContext);
-
-  // Check if auth context is ready
-  if (!authContext.isReady) {
-    return null;
-  }
-
-  // Redirect to login if not logged in
-  if (!authContext.isLoggedIn) {
-    return <Redirect href="/login" />;
-  }
-
   return (
     <Tabs screenOptions={{ tabBarActiveTintColor: "blue" }}>
       <Tabs.Screen
@@ -24,6 +10,24 @@ export default function TabLayout() {
           title: "Home",
           tabBarIcon: ({ color }) => (
             <FontAwesome size={28} name="home" color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="transactions"
+        options={{
+          title: "Transactions",
+          tabBarIcon: ({ color }) => (
+            <FontAwesome size={28} name="money" color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="budget"
+        options={{
+          title: "Budget",
+          tabBarIcon: ({ color }) => (
+            <FontAwesome size={28} name="area-chart" color={color} />
           ),
         }}
       />

@@ -7,84 +7,59 @@ import {
   FlatList,
   Pressable,
 } from "react-native";
-import { AuthContext } from "../../utils/authContext";
-import { Budget, Category, Transaction } from "../../types";
-import { getCurrentBudget } from "../../api";
+import { AuthContext } from "../../../utils/authContext";
+import { Budget, Category, Transaction } from "../../../types";
+import {
+  createBudget,
+  createCategory,
+  getCategories,
+  getCurrentBudget,
+  getTransactions,
+} from "../../../api";
+import TransactionModal from "../../../components/transactionModal";
 
 // Only for demo purposes, in the real app you would fetch this data from the API
-const transactions: Transaction[] = [
-  {
-    id: 1,
-    amount: 50,
-    type: "expense",
-    description: "Groceries",
-    date: "2023-10-01T00:00:00Z",
-    categoryId: 1,
-    createdAt: "2023-10-01T00:00:00Z",
-    updatedAt: "2023-10-01T00:00:00Z",
-  },
-  {
-    id: 2,
-    amount: 100,
-    type: "expense",
-    description: "Electricity Bill",
-    date: "2023-10-01T00:00:00Z",
-    categoryId: 3,
-    createdAt: "2023-10-01T00:00:00Z",
-    updatedAt: "2023-10-01T00:00:00Z",
-  },
-  {
-    id: 3,
-    amount: 30,
-    type: "expense",
-    description: "Dinner out",
-    date: "2023-10-02T00:00:00Z",
-    categoryId: 1,
-    createdAt: "2023-10-01T00:00:00Z",
-    updatedAt: "2023-10-01T00:00:00Z",
-  },
-];
-
-const categories: Category[] = [
-  {
-    id: 1,
-    name: "Food",
-    emoji: "🍔",
-    color: "#FF6347",
-    limitAmount: 500,
-    budgetId: 1,
-    createdAt: "2023-10-01T00:00:00Z",
-    updatedAt: "2023-10-01T00:00:00Z",
-    transactions: transactions.filter((t) => t.categoryId === 1),
-  },
-  {
-    id: 2,
-    name: "Entertainment",
-    emoji: "🎉",
-    color: "#FFD700",
-    limitAmount: 300,
-    budgetId: 1,
-    createdAt: "2023-10-01T00:00:00Z",
-    updatedAt: "2023-10-01T00:00:00Z",
-    transactions: [],
-  },
-  {
-    id: 3,
-    name: "Utilities",
-    emoji: "💡",
-    color: "#4682B4",
-    limitAmount: 150,
-    budgetId: 1,
-    createdAt: "2023-10-01T00:00:00Z",
-    updatedAt: "2023-10-01T00:00:00Z",
-    transactions: [],
-  },
-];
+const transactions: Transaction[] = [];
+// const transactions: Transaction[] = [
+//   {
+//     id: 1,
+//     amount: 50,
+//     type: "expense",
+//     description: "Groceries",
+//     date: "2023-10-01T00:00:00Z",
+//     categoryId: 1,
+//     createdAt: "2023-10-01T00:00:00Z",
+//     updatedAt: "2023-10-01T00:00:00Z",
+//   },
+//   {
+//     id: 2,
+//     amount: 100,
+//     type: "expense",
+//     description: "Electricity Bill",
+//     date: "2023-10-01T00:00:00Z",
+//     categoryId: 3,
+//     createdAt: "2023-10-01T00:00:00Z",
+//     updatedAt: "2023-10-01T00:00:00Z",
+//   },
+//   {
+//     id: 3,
+//     amount: 30,
+//     type: "expense",
+//     description: "Dinner out",
+//     date: "2023-10-02T00:00:00Z",
+//     categoryId: 1,
+//     createdAt: "2023-10-01T00:00:00Z",
+//     updatedAt: "2023-10-01T00:00:00Z",
+//   },
+// ];
 
 export default function Home() {
   const authContext = useContext(AuthContext);
   const [isLoading, setisLoading] = useState(true);
   const [budget, setBudget] = useState<Budget | null>(null);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [isTransactionModalOpen, setTransactionModalOpen] = useState(false);
 
   useEffect(() => {
     const getBudget = async () => {
@@ -92,6 +67,18 @@ export default function Home() {
         try {
           const budget = await getCurrentBudget(authContext.jwtToken);
           setBudget(budget);
+
+          const categories = await getCategories(
+            authContext.jwtToken,
+            budget.id
+          );
+          setCategories(categories);
+
+          const transactions = await getTransactions(
+            authContext.jwtToken,
+            budget.id
+          );
+          setTransactions(transactions);
         } catch (error) {
           console.error("Error fetching budget:", error);
         }
@@ -119,20 +106,47 @@ export default function Home() {
     return totalIncome - totalExpense;
   };
 
-  const getTotalTransaction = (transactions: Transaction[]) => {
+  const getTotalCategory = (categoryId: number) => {
     return transactions.reduce((acc, transaction) => {
-      if (transaction.type === "expense") {
-        return acc + transaction.amount;
-      } else if (transaction.type === "income") {
-        return acc - transaction.amount;
+      if (transaction.categoryId === categoryId) {
+        if (transaction.type === "expense") {
+          return acc + transaction.amount;
+        }
       }
       return acc;
     }, 0);
   };
 
-  const handleCreateBudget = () => {
-    // Handle budget creation logic here
+  const handleCreateBudget = async () => {
     console.log("Create Budget button pressed");
+    if (authContext.jwtToken) {
+      try {
+        const budget = await createBudget(authContext.jwtToken, {
+          stableIncome: 1500,
+        });
+        setBudget(budget);
+      } catch (error) {
+        console.error("Error creating budget:", error);
+      }
+    }
+  };
+
+  const handleCreateCategory = async () => {
+    console.log("Create Category button pressed");
+    if (authContext.jwtToken) {
+      try {
+        const category = await createCategory(authContext.jwtToken, {
+          name: "New Category",
+          emoji: "🆕",
+          color: "#FF69B4",
+          limitAmount: 100,
+          budgetId: budget?.id || 0, // Use the current budget ID
+        });
+        setCategories([...categories, category]);
+      } catch (error) {
+        console.error("Error creating budget:", error);
+      }
+    }
   };
 
   if (isLoading) {
@@ -162,40 +176,23 @@ export default function Home() {
           {/* Budget Categories */}
           <Text style={styles.sectionTitle}>Budget Categories</Text>
           <FlatList
-            data={[...categories, { id: "add", name: "Add", color: "#D3D3D3" }]} // Add a dummy category for the "+" button
+            data={categories}
             horizontal
             keyExtractor={(item) => item.id.toString()}
-            renderItem={({ item: category }) =>
-              category.id === "add" ? (
-                <Pressable
-                  style={[
-                    styles.categoryCard,
-                    { backgroundColor: category.color },
-                  ]}
-                  onPress={() => {
-                    // Handle add category logic here
-                    console.log("Add Category button pressed");
-                  }}
-                >
-                  <Text style={styles.addCategoryText}>+</Text>
-                </Pressable>
-              ) : (
-                <View
-                  style={[
-                    styles.categoryCard,
-                    { backgroundColor: category.color },
-                  ]}
-                >
-                  <Text style={styles.categoryName}>{category.name}</Text>
-                  <Text style={styles.categoryAmount}>
-                    {"transactions" in category
-                      ? getTotalTransaction(category.transactions)
-                      : 0}
-                    /{"limitAmount" in category ? category.limitAmount || 0 : 0}
-                  </Text>
-                </View>
-              )
-            }
+            renderItem={({ item: category }) => (
+              <View
+                style={[
+                  styles.categoryCard,
+                  { backgroundColor: category.color },
+                ]}
+              >
+                <Text style={styles.categoryName}>{category.name}</Text>
+                <Text style={styles.categoryAmount}>
+                  {getTotalCategory(category.id)}/
+                  {"limitAmount" in category ? category.limitAmount || 0 : 0}
+                </Text>
+              </View>
+            )}
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.categoriesContainer}
           />
@@ -207,10 +204,13 @@ export default function Home() {
             keyExtractor={(item) => item.id.toString()}
             renderItem={({ item }) => (
               <View style={styles.transactionItem}>
-                <Text style={styles.transactionDescription}>
-                  {item.description}
-                </Text>
-                <Text style={styles.transactionAmount}>${item.amount}</Text>
+                <Text style={styles.transactionDescription}>{item.name}</Text>
+                <Text
+                  style={[
+                    styles.transactionAmount,
+                    { color: item.type === "income" ? "green" : "red" },
+                  ]}
+                >{`${item.type === "expense" ? "-" : ""}$${item.amount}`}</Text>
               </View>
             )}
           />
@@ -218,11 +218,19 @@ export default function Home() {
       )}
 
       {/* Add Transaction Button */}
+      <Button
+        title="Add Transaction"
+        onPress={() => setTransactionModalOpen(true)}
+      />
 
-      {/* Log Out Button */}
-      <View style={styles.logoutButton}>
-        <Button title="Log out!" onPress={authContext.logOut} />
-      </View>
+      <TransactionModal
+        budgetId={budget?.id || 0}
+        saveTransaction={(newTransaction) =>
+          setTransactions([...transactions, newTransaction])
+        }
+        isOpen={isTransactionModalOpen}
+        closeModal={() => setTransactionModalOpen(false)}
+      />
     </View>
   );
 }
@@ -305,9 +313,5 @@ const styles = StyleSheet.create({
   transactionAmount: {
     fontSize: 16,
     fontWeight: "bold",
-  },
-  logoutButton: {
-    flex: 1,
-    justifyContent: "flex-end",
   },
 });

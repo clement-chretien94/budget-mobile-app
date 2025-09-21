@@ -7,7 +7,7 @@ export default function Layout() {
     <AuthProvider>
       <StatusBar style="auto" />
       <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(tabs)" options={{ animation: "none" }} />
+        <Stack.Screen name="(main)" options={{ animation: "none" }} />
         <Stack.Screen name="login" options={{ animation: "none" }} />
       </Stack>
     </AuthProvider>
