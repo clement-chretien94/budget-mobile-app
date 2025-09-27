@@ -1,57 +1,16 @@
-import { useContext, useEffect, useState } from "react";
-import {
-  View,
-  Text,
-  Button,
-  StyleSheet,
-  FlatList,
-  Pressable,
-} from "react-native";
+import { useContext, useEffect, useState, useCallback } from "react";
+import { View, Text, Button, StyleSheet, FlatList } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
 import { AuthContext } from "../../../utils/authContext";
 import { Budget, Category, Transaction } from "../../../types";
 import {
   createBudget,
   createCategory,
-  getCategories,
+  getCategoriesByBudget,
   getCurrentBudget,
-  getTransactions,
+  getTransactionsByBudget,
 } from "../../../api";
-import TransactionModal from "../../../components/transactionModal";
-
-// Only for demo purposes, in the real app you would fetch this data from the API
-const transactions: Transaction[] = [];
-// const transactions: Transaction[] = [
-//   {
-//     id: 1,
-//     amount: 50,
-//     type: "expense",
-//     description: "Groceries",
-//     date: "2023-10-01T00:00:00Z",
-//     categoryId: 1,
-//     createdAt: "2023-10-01T00:00:00Z",
-//     updatedAt: "2023-10-01T00:00:00Z",
-//   },
-//   {
-//     id: 2,
-//     amount: 100,
-//     type: "expense",
-//     description: "Electricity Bill",
-//     date: "2023-10-01T00:00:00Z",
-//     categoryId: 3,
-//     createdAt: "2023-10-01T00:00:00Z",
-//     updatedAt: "2023-10-01T00:00:00Z",
-//   },
-//   {
-//     id: 3,
-//     amount: 30,
-//     type: "expense",
-//     description: "Dinner out",
-//     date: "2023-10-02T00:00:00Z",
-//     categoryId: 1,
-//     createdAt: "2023-10-01T00:00:00Z",
-//     updatedAt: "2023-10-01T00:00:00Z",
-//   },
-// ];
+import TransactionItem from "../../../components/TransactionItem";
 
 export default function Home() {
   const authContext = useContext(AuthContext);
@@ -59,34 +18,43 @@ export default function Home() {
   const [budget, setBudget] = useState<Budget | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [isTransactionModalOpen, setTransactionModalOpen] = useState(false);
 
   useEffect(() => {
-    const getBudget = async () => {
-      if (authContext.jwtToken) {
-        try {
-          const budget = await getCurrentBudget(authContext.jwtToken);
-          setBudget(budget);
-
-          const categories = await getCategories(
-            authContext.jwtToken,
-            budget.id
-          );
-          setCategories(categories);
-
-          const transactions = await getTransactions(
-            authContext.jwtToken,
-            budget.id
-          );
-          setTransactions(transactions);
-        } catch (error) {
-          console.error("Error fetching budget:", error);
-        }
-      }
-    };
-    getBudget();
+    loadData();
     setisLoading(false);
-  }, []);
+  }, [authContext.jwtToken]);
+
+  const loadData = async () => {
+    if (authContext.jwtToken) {
+      try {
+        const budget = await getCurrentBudget(authContext.jwtToken);
+        setBudget(budget);
+
+        const categories = await getCategoriesByBudget(
+          authContext.jwtToken,
+          budget.id
+        );
+        setCategories(categories);
+
+        let transactions = await getTransactionsByBudget(
+          authContext.jwtToken,
+          budget.id,
+          3
+        );
+
+        setTransactions(transactions);
+      } catch (error) {
+        console.error("Error fetching budget:", error);
+      }
+    }
+  };
+
+  // Refaire l'appel API quand on revient sur cet écran
+  useFocusEffect(
+    useCallback(() => {
+      loadData();
+    }, [authContext.jwtToken])
+  );
 
   const getTotalBalance = () => {
     const totalIncome =
@@ -118,7 +86,6 @@ export default function Home() {
   };
 
   const handleCreateBudget = async () => {
-    console.log("Create Budget button pressed");
     if (authContext.jwtToken) {
       try {
         const budget = await createBudget(authContext.jwtToken, {
@@ -132,7 +99,6 @@ export default function Home() {
   };
 
   const handleCreateCategory = async () => {
-    console.log("Create Category button pressed");
     if (authContext.jwtToken) {
       try {
         const category = await createCategory(authContext.jwtToken, {
@@ -170,7 +136,7 @@ export default function Home() {
           {/* Total Balance */}
           <View style={styles.balanceContainer}>
             <Text style={styles.balanceLabel}>Total Balance</Text>
-            <Text style={styles.balanceAmount}>${getTotalBalance()}</Text>
+            <Text style={styles.balanceAmount}>${budget.totalBalance}</Text>
           </View>
 
           {/* Budget Categories */}
@@ -202,35 +168,10 @@ export default function Home() {
           <FlatList
             data={transactions}
             keyExtractor={(item) => item.id.toString()}
-            renderItem={({ item }) => (
-              <View style={styles.transactionItem}>
-                <Text style={styles.transactionDescription}>{item.name}</Text>
-                <Text
-                  style={[
-                    styles.transactionAmount,
-                    { color: item.type === "income" ? "green" : "red" },
-                  ]}
-                >{`${item.type === "expense" ? "-" : ""}$${item.amount}`}</Text>
-              </View>
-            )}
+            renderItem={({ item }) => <TransactionItem transaction={item} />}
           />
         </>
       )}
-
-      {/* Add Transaction Button */}
-      <Button
-        title="Add Transaction"
-        onPress={() => setTransactionModalOpen(true)}
-      />
-
-      <TransactionModal
-        budgetId={budget?.id || 0}
-        saveTransaction={(newTransaction) =>
-          setTransactions([...transactions, newTransaction])
-        }
-        isOpen={isTransactionModalOpen}
-        closeModal={() => setTransactionModalOpen(false)}
-      />
     </View>
   );
 }
@@ -238,7 +179,7 @@ export default function Home() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F8F9FA",
+    backgroundColor: "#FFF",
     padding: 16,
   },
   header: {
@@ -294,24 +235,5 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: "bold",
     color: "#000",
-  },
-  transactionItem: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    padding: 12,
-    backgroundColor: "#FFFFFF",
-    borderRadius: 8,
-    marginBottom: 8,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  transactionDescription: {
-    fontSize: 16,
-  },
-  transactionAmount: {
-    fontSize: 16,
-    fontWeight: "bold",
   },
 });

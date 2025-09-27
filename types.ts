@@ -38,6 +38,7 @@ export type Budget = {
   month: number;
   year: number;
   stableIncome: number;
+  totalBalance: number;
   userId: number;
   createdAt: string;
   updatedAt: string;
@@ -77,6 +78,9 @@ export type Transaction = {
   name: string;
   date: string;
   categoryId: number;
+  categoryName?: string;
+  categoryEmoji?: string;
+  budgetId: number;
   createdAt: string;
   updatedAt: string;
 };

@@ -26,7 +26,6 @@ export const createUser = async (user: UserCreate): Promise<User> => {
   }
 
   const data = await response.json();
-  console.log("User created:", data);
   return data;
 };
 
@@ -48,7 +47,6 @@ export const connectUser = async (
   }
 
   const data = await response.json();
-  console.log("User connected:", data);
   return data;
 };
 
@@ -66,7 +64,6 @@ export const getConnectedUser = async (jwt: string): Promise<User> => {
   }
 
   const data = await response.json();
-  console.log("User fetched:", data);
   //console.log("JWT: ", jwt);
   return data;
 };
@@ -85,7 +82,6 @@ export const getCurrentBudget = async (jwt: string): Promise<Budget> => {
   }
 
   const data = await response.json();
-  console.log("Budget fetched:", data);
   return data;
 };
 
@@ -107,7 +103,6 @@ export const createBudget = async (
   }
 
   const data = await response.json();
-  console.log("Budget created:", data);
   return data;
 };
 
@@ -133,11 +128,27 @@ export const createCategory = async (
   }
 
   const data = await response.json();
-  console.log("Category created:", data);
   return data;
 };
 
-export const getCategories = async (
+export const getCategories = async (jwt: string): Promise<Category[]> => {
+  const response = await fetch(`${baseUrl}/categories`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${jwt}`,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch categories");
+  }
+
+  const data = await response.json();
+  return data;
+};
+
+export const getCategoriesByBudget = async (
   jwt: string,
   budgetId: number
 ): Promise<Category[]> => {
@@ -154,21 +165,26 @@ export const getCategories = async (
   }
 
   const data = await response.json();
-  console.log("Categories fetched:", data);
   return data;
 };
 
-export const getTransactions = async (
+export const getTransactionsByBudget = async (
   jwt: string,
-  budgetId: number
+  budgetId: number,
+  limit: number | undefined = undefined
 ): Promise<Transaction[]> => {
-  const response = await fetch(`${baseUrl}/budgets/${budgetId}/transactions`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${jwt}`,
-    },
-  });
+  const response = await fetch(
+    `${baseUrl}/budgets/${budgetId}/transactions${
+      limit ? `?take=${limit}` : ""
+    }`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${jwt}`,
+      },
+    }
+  );
 
   if (!response.ok) {
     console.error(
@@ -180,16 +196,42 @@ export const getTransactions = async (
   }
 
   const data = await response.json();
-  console.log("Transactions fetched:", data);
+  return data;
+};
+
+export const getTransactions = async (
+  jwt: string,
+  limit: number | undefined = undefined
+): Promise<Transaction[]> => {
+  const response = await fetch(
+    `${baseUrl}/transactions${limit ? `?take=${limit}` : ""}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${jwt}`,
+      },
+    }
+  );
+
+  if (!response.ok) {
+    console.error(
+      "Error fetching transactions:",
+      response.status,
+      response.statusText
+    );
+    throw new Error("Failed to fetch transactions");
+  }
+
+  const data = await response.json();
   return data;
 };
 
 export const createTransaction = async (
   jwt: string,
-  budgetId: number,
   transaction: TransactionCreate
 ): Promise<Transaction> => {
-  const response = await fetch(`${baseUrl}/budgets/${budgetId}/transactions`, {
+  const response = await fetch(`${baseUrl}/transactions`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -203,6 +245,5 @@ export const createTransaction = async (
   }
 
   const data = await response.json();
-  console.log("Transaction created:", data);
   return data;
 };

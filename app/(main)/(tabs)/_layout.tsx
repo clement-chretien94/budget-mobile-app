@@ -23,6 +23,15 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="add-transaction"
+        options={{
+          title: "Add Transaction",
+          tabBarIcon: ({ color }) => (
+            <FontAwesome size={28} name="plus" color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="budget"
         options={{
           title: "Budget",

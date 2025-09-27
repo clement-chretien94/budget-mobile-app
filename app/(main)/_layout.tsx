@@ -16,18 +16,8 @@ export default function TabLayout() {
   }
 
   return (
-    <Stack>
-      <Stack.Screen
-        name="(tabs)"
-        options={{ animation: "none", headerShown: false }}
-      />
-      <Stack.Screen
-        name="category"
-        options={{
-          animation: "none",
-          headerTitle: "Category",
-        }}
-      />
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="(tabs)" options={{ animation: "none" }} />
     </Stack>
   );
 }

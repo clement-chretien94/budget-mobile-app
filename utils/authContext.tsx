@@ -49,10 +49,8 @@ export function AuthProvider({ children }: PropsWithChildren) {
     username: string;
     password: string;
   }) => {
-    console.log("Logging in with", username, password);
     try {
       const user: UserConnect = await connectUser(username, password);
-      console.log("User connected:", user);
       setIsLoggedIn(true);
       setUser(user.user);
       setJwtToken(user.jwt);
@@ -76,8 +74,6 @@ export function AuthProvider({ children }: PropsWithChildren) {
   };
 
   const signUp = async (user: UserCreate) => {
-    console.log("Signing up with", user.username, user.email, user.password);
-
     try {
       await createUser(user);
       // If the user is created successfully, go to the login page
@@ -108,7 +104,6 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
           try {
             const user = await getConnectedUser(jwtTokenValue);
-            console.log("User fetched from storage:", user);
             setUser(user);
           } catch (error) {
             console.log("Error fetching user from storage", error);
