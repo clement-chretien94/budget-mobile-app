@@ -89,6 +89,8 @@ export default function Home() {
     if (authContext.jwtToken) {
       try {
         const budget = await createBudget(authContext.jwtToken, {
+          month: new Date().getMonth() + 1,
+          year: new Date().getFullYear(),
           stableIncome: 1500,
         });
         setBudget(budget);

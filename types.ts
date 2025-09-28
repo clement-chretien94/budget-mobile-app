@@ -45,7 +45,7 @@ export type Budget = {
   categories: Category[];
 };
 
-export type BudgetCategory = Omit<Budget, "totalBalance" | "categories"> & {
+export type BudgetCategory = Omit<Budget, "categories"> & {
   categories: {
     id: number;
     name: string;
@@ -56,6 +56,8 @@ export type BudgetCategory = Omit<Budget, "totalBalance" | "categories"> & {
 };
 
 export type BudgetCreate = {
+  month: number;
+  year: number;
   stableIncome: number;
 };
 
