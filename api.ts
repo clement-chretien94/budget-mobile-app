@@ -8,6 +8,7 @@ import {
   CategoryCreate,
   Transaction,
   TransactionCreate,
+  BudgetCategory,
 } from "./types";
 
 const baseUrl = "http://192.168.1.21:3000";
@@ -79,6 +80,33 @@ export const getCurrentBudget = async (jwt: string): Promise<Budget> => {
 
   if (!response.ok) {
     throw new Error("Failed to fetch current budget");
+  }
+
+  const data = await response.json();
+  return data;
+};
+
+export const getBudgetByDate = async (
+  jwt: string,
+  month: number,
+  year: number
+): Promise<BudgetCategory> => {
+  const response = await fetch(
+    `${baseUrl}/budgets?month=${month}&year=${year}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${jwt}`,
+      },
+    }
+  );
+
+  console.log("Fetching budget for", month, year);
+  console.log("Response status:", response.status, response.statusText);
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch budget");
   }
 
   const data = await response.json();

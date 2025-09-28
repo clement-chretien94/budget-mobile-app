@@ -45,6 +45,16 @@ export type Budget = {
   categories: Category[];
 };
 
+export type BudgetCategory = Omit<Budget, "totalBalance" | "categories"> & {
+  categories: {
+    id: number;
+    name: string;
+    emoji: string;
+    limitAmount: number;
+    totalExpenses: number;
+  }[];
+};
+
 export type BudgetCreate = {
   stableIncome: number;
 };
