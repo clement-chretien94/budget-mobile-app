@@ -11,6 +11,7 @@ import {
   getTransactionsByBudget,
 } from "../../../api";
 import TransactionItem from "../../../components/TransactionItem";
+import CreateBudgetModal from "../../../components/CreateBudgetModal";
 
 export default function Home() {
   const authContext = useContext(AuthContext);
@@ -18,6 +19,8 @@ export default function Home() {
   const [budget, setBudget] = useState<Budget | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+
+  const [modalVisible, setModalVisible] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -86,18 +89,7 @@ export default function Home() {
   };
 
   const handleCreateBudget = async () => {
-    if (authContext.jwtToken) {
-      try {
-        const budget = await createBudget(authContext.jwtToken, {
-          month: new Date().getMonth() + 1,
-          year: new Date().getFullYear(),
-          stableIncome: 1500,
-        });
-        setBudget(budget);
-      } catch (error) {
-        console.error("Error creating budget:", error);
-      }
-    }
+    setModalVisible(true);
   };
 
   const handleCreateCategory = async () => {
@@ -132,6 +124,15 @@ export default function Home() {
             No budget found for this month. Please create a budget.
           </Text>
           <Button title="Create Budget" onPress={handleCreateBudget} />
+          <CreateBudgetModal
+            modalVisible={modalVisible}
+            setModalVisible={setModalVisible}
+            selectedDate={{
+              month: new Date().getMonth() + 1,
+              year: new Date().getFullYear(),
+            }}
+            setBudget={setBudget}
+          />
         </>
       ) : (
         <>

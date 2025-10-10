@@ -159,6 +159,26 @@ export const createCategory = async (
   return data;
 };
 
+export const addCategoryToBudget = async (
+  jwt: string,
+  category: { budgetId: number; categoryId: number; limitAmount: number }
+): Promise<void> => {
+  const { budgetId, ...categoryWithoutBudgetId } = category;
+  console.log("Adding category to budget:", categoryWithoutBudgetId);
+  const response = await fetch(`${baseUrl}/budgets/${budgetId}/categories`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${jwt}`,
+    },
+    body: JSON.stringify(categoryWithoutBudgetId),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to add category to budget");
+  }
+};
+
 export const getCategories = async (jwt: string): Promise<Category[]> => {
   const response = await fetch(`${baseUrl}/categories`, {
     method: "GET",
@@ -268,8 +288,20 @@ export const createTransaction = async (
     body: JSON.stringify(transaction),
   });
 
+  console.log("Creating transaction:", transaction);
+  console.log("Response status:", response.status, response.statusText);
+
   if (!response.ok) {
-    throw new Error("Failed to create transaction");
+    const errorData = await response.json();
+
+    if (
+      errorData.code === "BUDGET_NOT_FOUND" ||
+      errorData.code === "CATEGORY_NOT_FOUND_IN_BUDGET"
+    ) {
+      throw new Error(errorData.message);
+    } else {
+      throw new Error("Failed to create transaction");
+    }
   }
 
   const data = await response.json();

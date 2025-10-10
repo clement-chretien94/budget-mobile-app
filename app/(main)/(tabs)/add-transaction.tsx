@@ -57,7 +57,12 @@ export default function AddTransaction() {
       setError("");
     } catch (error) {
       console.error("Error creating transaction:", error);
-      setError("Failed to create transaction");
+
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError("An error occurred");
+      }
       return;
     }
   };
