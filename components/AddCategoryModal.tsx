@@ -27,10 +27,14 @@ export default function AddCategoryModal({
   const [limitAmount, setLimitAmount] = useState(250);
 
   useEffect(() => {
-    loadCategories();
-  }, [authContext.jwtToken]);
+    // Load categories initially and whenever modal is opened
+    if (modalVisible) {
+      loadCategories();
+    }
+  }, [authContext.jwtToken, modalVisible]);
 
   const loadCategories = async () => {
+    setisLoading(true);
     if (authContext.jwtToken) {
       const categories = await getCategories(authContext.jwtToken);
       setCategories(categories);

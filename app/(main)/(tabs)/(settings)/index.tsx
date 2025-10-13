@@ -1,18 +1,16 @@
 import { useContext } from "react";
 import { View, Text, StyleSheet, Button } from "react-native";
-import { AuthContext } from "../../../utils/authContext";
+import { AuthContext } from "../../../../utils/authContext";
+import { Link } from "expo-router";
 
-export default function Tab() {
+export default function Settings() {
   const authContext = useContext(AuthContext);
-
-  const handleCreateCategory = () => {
-    // Logic to create a new category
-  };
 
   return (
     <View style={styles.container}>
-      <Text>Tab Settings</Text>
-      <Button title="Create new category" onPress={handleCreateCategory} />
+      <Link style={styles.link} href="/create-category">
+        Create new category
+      </Link>
 
       <View style={styles.logoutButton}>
         <Button title="Log out!" onPress={authContext.logOut} />
@@ -26,6 +24,18 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#FFF",
     padding: 16,
+  },
+  link: {
+    marginVertical: 20,
+    backgroundColor: "#007BFF",
+    color: "#FFF",
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 6,
+    textAlign: "center",
+    fontWeight: "bold",
+    fontSize: 16,
+    overflow: "hidden",
   },
   logoutButton: {
     flex: 1,

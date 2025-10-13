@@ -6,7 +6,8 @@ import {
   Button,
   StyleSheet,
 } from "react-native";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState, useCallback } from "react";
+import { useFocusEffect } from "@react-navigation/native";
 import { Picker } from "@react-native-picker/picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { AuthContext } from "../../../utils/authContext";
@@ -72,6 +73,7 @@ export default function AddTransaction() {
   }, [authContext.jwtToken]);
 
   const loadCategories = async () => {
+    setisLoading(true);
     if (authContext.jwtToken) {
       const categories = await getCategories(authContext.jwtToken);
       setCategories(categories);
@@ -81,6 +83,13 @@ export default function AddTransaction() {
     }
     setisLoading(false);
   };
+
+  // Reload categories whenever this screen regains focus
+  useFocusEffect(
+    useCallback(() => {
+      loadCategories();
+    }, [authContext.jwtToken])
+  );
 
   return (
     <View style={styles.container}>

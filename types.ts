@@ -77,8 +77,6 @@ export type CategoryCreate = {
   name: string;
   emoji: string;
   color: string;
-  limitAmount?: number;
-  budgetId: number;
 };
 
 export type TransactionType = "expense" | "income";

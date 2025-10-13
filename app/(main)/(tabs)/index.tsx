@@ -4,8 +4,6 @@ import { useFocusEffect } from "@react-navigation/native";
 import { AuthContext } from "../../../utils/authContext";
 import { Budget, Category, Transaction } from "../../../types";
 import {
-  createBudget,
-  createCategory,
   getCategoriesByBudget,
   getCurrentBudget,
   getTransactionsByBudget,
@@ -59,24 +57,6 @@ export default function Home() {
     }, [authContext.jwtToken])
   );
 
-  const getTotalBalance = () => {
-    const totalIncome =
-      (budget?.stableIncome || 0) +
-      transactions.reduce((acc, transaction) => {
-        if (transaction.type === "income") {
-          return acc + transaction.amount;
-        }
-        return acc;
-      }, 0);
-    const totalExpense = transactions.reduce((acc, transaction) => {
-      if (transaction.type === "expense") {
-        return acc + transaction.amount;
-      }
-      return acc;
-    }, 0);
-    return totalIncome - totalExpense;
-  };
-
   const getTotalCategory = (categoryId: number) => {
     return transactions.reduce((acc, transaction) => {
       if (transaction.categoryId === categoryId) {
@@ -90,23 +70,6 @@ export default function Home() {
 
   const handleCreateBudget = async () => {
     setModalVisible(true);
-  };
-
-  const handleCreateCategory = async () => {
-    if (authContext.jwtToken) {
-      try {
-        const category = await createCategory(authContext.jwtToken, {
-          name: "New Category",
-          emoji: "🆕",
-          color: "#FF69B4",
-          limitAmount: 100,
-          budgetId: budget?.id || 0, // Use the current budget ID
-        });
-        setCategories([...categories, category]);
-      } catch (error) {
-        console.error("Error creating budget:", error);
-      }
-    }
   };
 
   if (isLoading) {

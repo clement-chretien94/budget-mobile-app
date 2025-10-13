@@ -138,18 +138,14 @@ export const createCategory = async (
   jwt: string,
   category: CategoryCreate
 ): Promise<Category> => {
-  const { budgetId, ...categoryWithoutBudgetId } = category;
-  const response = await fetch(
-    `${baseUrl}/budgets/${category.budgetId}/categories`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${jwt}`,
-      },
-      body: JSON.stringify(categoryWithoutBudgetId),
-    }
-  );
+  const response = await fetch(`${baseUrl}/categories`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${jwt}`,
+    },
+    body: JSON.stringify(category),
+  });
 
   if (!response.ok) {
     throw new Error("Failed to create category");
