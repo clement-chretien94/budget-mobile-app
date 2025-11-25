@@ -15,7 +15,7 @@ export const AuthContext = createContext<AuthState>({
   user: null,
   jwtToken: undefined,
   isReady: false,
-  logIn: ({}: { username: string; password: string }) => {},
+  logIn: ({}: { email: string; password: string }) => {},
   logOut: () => {},
   signUp: ({}: UserCreate) => {},
 });
@@ -43,14 +43,14 @@ export function AuthProvider({ children }: PropsWithChildren) {
   };
 
   const logIn = async ({
-    username,
+    email,
     password,
   }: {
-    username: string;
+    email: string;
     password: string;
   }) => {
     try {
-      const user: UserConnect = await connectUser(username, password);
+      const user: UserConnect = await connectUser(email, password);
       setIsLoggedIn(true);
       setUser(user.user);
       setJwtToken(user.jwt);

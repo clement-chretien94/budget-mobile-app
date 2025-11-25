@@ -11,7 +11,7 @@ import {
   BudgetCategory,
 } from "./types";
 
-const baseUrl = "http://192.168.1.21:3000";
+const baseUrl = "http://192.168.1.208:3000";
 
 export const createUser = async (user: UserCreate): Promise<User> => {
   const response = await fetch(`${baseUrl}/signup`, {
@@ -31,7 +31,7 @@ export const createUser = async (user: UserCreate): Promise<User> => {
 };
 
 export const connectUser = async (
-  username: string,
+  email: string,
   password: string
 ): Promise<UserConnect> => {
   const response = await fetch(`${baseUrl}/signin`, {
@@ -39,7 +39,7 @@ export const connectUser = async (
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ username, password }),
+    body: JSON.stringify({ email, password }),
   });
 
   if (!response.ok) {
@@ -102,9 +102,6 @@ export const getBudgetByDate = async (
     }
   );
 
-  console.log("Fetching budget for", month, year);
-  console.log("Response status:", response.status, response.statusText);
-
   if (!response.ok) {
     throw new Error("Failed to fetch budget");
   }
@@ -160,7 +157,6 @@ export const addCategoryToBudget = async (
   category: { budgetId: number; categoryId: number; limitAmount: number }
 ): Promise<void> => {
   const { budgetId, ...categoryWithoutBudgetId } = category;
-  console.log("Adding category to budget:", categoryWithoutBudgetId);
   const response = await fetch(`${baseUrl}/budgets/${budgetId}/categories`, {
     method: "POST",
     headers: {
@@ -245,18 +241,18 @@ export const getTransactionsByBudget = async (
 
 export const getTransactions = async (
   jwt: string,
-  limit: number | undefined = undefined
+  filter: "all" | "expense" | "income" = "all"
 ): Promise<Transaction[]> => {
-  const response = await fetch(
-    `${baseUrl}/transactions${limit ? `?take=${limit}` : ""}`,
-    {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${jwt}`,
-      },
-    }
-  );
+  const url = `${baseUrl}/transactions${
+    filter !== "all" ? `?type=${filter}` : ""
+  }`;
+  const response = await fetch(url, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${jwt}`,
+    },
+  });
 
   if (!response.ok) {
     console.error(
@@ -283,9 +279,6 @@ export const createTransaction = async (
     },
     body: JSON.stringify(transaction),
   });
-
-  console.log("Creating transaction:", transaction);
-  console.log("Response status:", response.status, response.statusText);
 
   if (!response.ok) {
     const errorData = await response.json();

@@ -1,15 +1,22 @@
-import { FontAwesome } from "@expo/vector-icons";
+import { MaterialIcons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
+import CustomHeader from "../../../components/CustomHeader";
 
 export default function TabLayout() {
   return (
-    <Tabs screenOptions={{ tabBarActiveTintColor: "blue" }}>
+    <Tabs
+      screenOptions={{
+        tabBarActiveTintColor: "blue",
+        headerShadowVisible: false,
+      }}
+    >
       <Tabs.Screen
-        name="index"
+        name="(home)"
         options={{
+          headerShown: false,
           title: "Home",
           tabBarIcon: ({ color }) => (
-            <FontAwesome size={28} name="home" color={color} />
+            <MaterialIcons size={28} name="home" color={color} />
           ),
         }}
       />
@@ -17,36 +24,29 @@ export default function TabLayout() {
         name="transactions"
         options={{
           title: "Transactions",
+          header: () => <CustomHeader title="Transactions" />,
           tabBarIcon: ({ color }) => (
-            <FontAwesome size={28} name="money" color={color} />
+            <MaterialIcons size={28} name="receipt-long" color={color} />
           ),
         }}
       />
       <Tabs.Screen
-        name="add-transaction"
+        name="categories"
         options={{
-          title: "Add Transaction",
+          title: "Categories",
+          header: () => <CustomHeader title="Categories" />,
           tabBarIcon: ({ color }) => (
-            <FontAwesome size={28} name="plus" color={color} />
+            <MaterialIcons size={28} name="pie-chart" color={color} />
           ),
         }}
       />
       <Tabs.Screen
-        name="budget"
+        name="(profile)"
         options={{
-          title: "Budget",
-          tabBarIcon: ({ color }) => (
-            <FontAwesome size={28} name="area-chart" color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="(settings)"
-        options={{
+          title: "Profile",
           headerShown: false,
-          title: "Settings",
           tabBarIcon: ({ color }) => (
-            <FontAwesome size={28} name="cog" color={color} />
+            <MaterialIcons size={28} name="person" color={color} />
           ),
         }}
       />

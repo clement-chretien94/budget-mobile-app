@@ -3,27 +3,21 @@ export type AuthState = {
   user: User | null;
   jwtToken: string | undefined;
   isReady: boolean;
-  logIn: ({
-    username,
-    password,
-  }: {
-    username: string;
-    password: string;
-  }) => void;
+  logIn: ({ email, password }: { email: string; password: string }) => void;
   logOut: () => void;
   signUp: ({}: UserCreate) => void;
 };
 
 export type User = {
   id: number;
-  username: string;
+  fullName: string;
   email: string;
   createdAt: string;
   updatedAt: string;
 };
 
 export type UserCreate = {
-  username: string;
+  fullName: string;
   email: string;
   password: string;
 };
@@ -37,7 +31,6 @@ export type Budget = {
   id: number;
   month: number;
   year: number;
-  stableIncome: number;
   totalBalance: number;
   userId: number;
   createdAt: string;
@@ -58,7 +51,6 @@ export type BudgetCategory = Omit<Budget, "categories"> & {
 export type BudgetCreate = {
   month: number;
   year: number;
-  stableIncome: number;
 };
 
 export type Category = {
@@ -76,7 +68,6 @@ export type Category = {
 export type CategoryCreate = {
   name: string;
   emoji: string;
-  color: string;
 };
 
 export type TransactionType = "expense" | "income";
