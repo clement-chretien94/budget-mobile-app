@@ -11,7 +11,15 @@ import {
   BudgetCategory,
 } from "./types";
 
-const baseUrl = "http://192.168.1.208:3000";
+const baseUrl = __DEV__
+  ? "http://192.168.1.208:3000"
+  : process.env.EXPO_PUBLIC_API_URL;
+
+if (__DEV__) {
+  console.log(`🔧 Mode Développement actif. API: ${baseUrl}`);
+} else {
+  console.log(`🚀 Mode Production actif.`);
+}
 
 export const createUser = async (user: UserCreate): Promise<User> => {
   const response = await fetch(`${baseUrl}/signup`, {

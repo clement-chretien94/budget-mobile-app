@@ -12,6 +12,15 @@ export default function Settings() {
     return authContext.user?.fullName || "Guest User";
   }, [authContext.user?.fullName]);
 
+  const avatarInitial = useMemo(() => {
+    const trimmed = userName.split(" ");
+    if (!trimmed) return "?";
+    return trimmed
+      .map((n) => n.charAt(0).toUpperCase())
+      .slice(0, 2)
+      .join("");
+  }, [userName]);
+
   const userEmail = useMemo(() => {
     return authContext.user?.email || "unknown@email.com";
   }, [authContext.user?.email]);
@@ -27,7 +36,8 @@ export default function Settings() {
       {/* Profile Header Block */}
       <View style={styles.profileBlock}>
         <View style={styles.avatarWrapper}>
-          <Image source={avatarSource} style={styles.avatar} />
+          {/* <Image source={avatarSource} style={styles.avatar} /> */}
+          <Text style={styles.avatar}>{avatarInitial}</Text>
         </View>
         <Text style={styles.name}>{userName}</Text>
         <Text style={styles.email}>{userEmail}</Text>
@@ -93,10 +103,15 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 },
     elevation: 2,
+    alignItems: "center",
+    justifyContent: "center",
   },
   avatar: {
-    width: "100%",
-    height: "100%",
+    fontSize: 40,
+    fontWeight: "700",
+    color: "#141118",
+    textAlign: "center",
+    lineHeight: 48,
   },
   name: {
     fontSize: 24,
